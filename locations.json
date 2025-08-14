@@ -1,0 +1,573 @@
+{
+  "Заброшенная твердыня": {
+    "enemies": [
+      "Night Watch",
+      "Winter Sniper"
+    ],
+    "row": 2,
+    "col": 6
+  },
+  "Лесная глушь": {
+    "enemies": [
+      "Flycatcher",
+      "Pixie Mage"
+    ],
+    "row": 7,
+    "col": 3
+  },
+  "Пляж": {
+    "enemies": [
+      "Pirate",
+      "Snail"
+    ],
+    "row": 5,
+    "col": 1
+  },
+  "Вход в замок": {
+    "enemies": [
+      "Strange Guard"
+    ],
+    "row": 2,
+    "col": 9
+  },
+  "Пещера": {
+    "enemies": [
+      "Imp Shaman",
+      "Imp Warrior"
+    ],
+    "row": 1,
+    "col": 4
+  },
+  "Вход в пещеру": {
+    "enemies": [
+      "Imp Hunter",
+      "Imp Warrior"
+    ],
+    "row": 2,
+    "col": 4
+  },
+  "Морозный путь": {
+    "enemies": [
+      "Heretic Hunter",
+      "Mountain Troll"
+    ],
+    "row": 3,
+    "col": 6
+  },
+  "Вход в город": {
+    "enemies": [
+      "Drunk Guard",
+      "Lazy Guard"
+    ],
+    "row": 5,
+    "col": 9
+  },
+  "Городской склад": {
+    "enemies": [
+      "Aristocrat",
+      "Assassin"
+    ],
+    "row": 6,
+    "col": 11
+  },
+  "Обрыв": {
+    "enemies": [
+      "Fishleg",
+      "Leviathan"
+    ],
+    "row": 8,
+    "col": 3
+  },
+  "Темный лес": {
+    "enemies": [
+      "Black Widow",
+      "Spiderling"
+    ],
+    "row": 3,
+    "col": 7
+  },
+  "Поселение демонов": {
+    "enemies": [
+      "Deamon Brat",
+      "Deamon Guard",
+      "Spark"
+    ],
+    "row": 3,
+    "col": 10
+  },
+  "Чаща": {
+    "enemies": [
+      "Forest Spider",
+      "Spider"
+    ],
+    "row": 6,
+    "col": 1
+  },
+  "Центр города": {
+    "enemies": [
+      "Drunk Guard",
+      "Rebel",
+      "Sarmatian"
+    ],
+    "row": 5,
+    "col": 10
+  },
+  "Тропа Друида": {
+    "enemies": [
+      "Driada",
+      "Spirit"
+    ],
+    "row": 8,
+    "col": 1
+  },
+  "Зачарованная Роща": {
+    "enemies": [
+      "Pixie",
+      "Pixie Mage",
+      "Spirit"
+    ],
+    "row": 7,
+    "col": 2
+  },
+  "Дальняя канализация": {
+    "enemies": [
+      "Rat"
+    ],
+    "row": 1,
+    "col": 1
+  },
+  "Избушка фермера": {
+    "enemies": [
+      "Old Farmer"
+    ],
+    "row": 5,
+    "col": 2
+  },
+  "Фермерские угодья": {
+    "enemies": [
+      "Cow",
+      "Horse"
+    ],
+    "row": 7,
+    "col": 9
+  },
+  "Заброшенное поместье": {
+    "enemies": [
+      "Strange Guard",
+      "Suspicious Guard"
+    ],
+    "row": 2,
+    "col": 8
+  },
+  "Мрачные сырые земли": {
+    "enemies": [
+      "Lotus",
+      "Pluyek"
+    ],
+    "row": 7,
+    "col": 8
+  },
+  "Земли пикси": {
+    "enemies": [
+      "Bear",
+      "Carnivorous Hare",
+      "Unicorn"
+    ],
+    "row": 2,
+    "col": 7
+  },
+  "Луга": {
+    "enemies": [
+      "Toad",
+      "Wolf"
+    ],
+    "row": 4,
+    "col": 4
+  },
+  "Кладбище": {
+    "enemies": [
+      "Monstrous Skeleton",
+      "Risen Skeleton"
+    ],
+    "row": 2,
+    "col": 12
+  },
+  "Зелёное захолустье": {
+    "enemies": [
+      "Big Ben",
+      "Little Jen",
+      "Middle Ken"
+    ],
+    "row": 5,
+    "col": 6
+  },
+  "Гнездо гремлинов": {
+    "enemies": [
+      "Gremlin Brute",
+      "Gremlin Rogue"
+    ],
+    "row": 3,
+    "col": 9
+  },
+  "Логово Гарпии": {
+    "enemies": [
+      "Baby Harpy",
+      "Harpy"
+    ],
+    "row": 3,
+    "col": 1
+  },
+  "Степь": {
+    "enemies": [
+      "Bandit",
+      "Berserk Cultist"
+    ],
+    "row": 5,
+    "col": 5
+  },
+  "Ледяные земли": {
+    "enemies": [
+      "Frost Terror"
+    ],
+    "row": 1,
+    "col": 6
+  },
+  "Тронный зал импов": {
+    "enemies": [
+      "Imp Chieftain",
+      "Imp Elite Guard"
+    ],
+    "row": 2,
+    "col": 5
+  },
+  "Жилище импов": {
+    "enemies": [
+      "Imp Elite Guard",
+      "Imp Shaman",
+      "Imp Warrior"
+    ],
+    "row": 1,
+    "col": 5
+  },
+  "Территория импов": {
+    "enemies": [
+      "Imp Hunter",
+      "Wolf"
+    ],
+    "row": 3,
+    "col": 4
+  },
+  "Нижнее полесье": {
+    "enemies": [
+      "Berserk Cultist",
+      "Brawlhopper"
+    ],
+    "row": 6,
+    "col": 4
+  },
+  "Магический круг": {
+    "enemies": [
+      "Heretic Brute",
+      "Heretic Hunter",
+      "Heretic Leader"
+    ],
+	"row": 3,
+	"col": 5
+  },
+  "Гиблое место": {
+    "enemies": [
+      "Sensei"
+    ],
+    "row": 7,
+    "col": 6
+  },
+  "Горный перевал": {
+    "enemies": [
+      "Big Ben",
+      "Little Jen",
+      "Middle Ken"
+    ],
+    "row": 4,
+    "col": 6
+  },
+  "Грибные поля": {
+    "enemies": [
+      "Bogstrich",
+      "Bolotnik"
+    ],
+    "row": 7,
+    "col": 7
+  },
+  "Старая ферма": {
+    "enemies": [
+      "Cow",
+      "Old Farmer"
+    ],
+    "row": 6,
+    "col": 9
+  },
+  "Топкие поля": {
+    "enemies": [
+      "Suspicious Guard"
+    ],
+    "row": 2,
+    "col": 10
+  },
+  "Пиратская бухта": {
+    "enemies": [
+      "Pirate",
+      "Pirate Captain"
+    ],
+    "row": 4,
+    "col": 1
+  },
+  "Земли пикси (лес)": {
+    "enemies": [
+      "Pixie Shooter",
+      "Weird Mushroom"
+    ],
+    "row": 6,
+    "col": 2
+  },
+  "Вход в резервацию": {
+    "enemies": [
+      "Deamon Guard",
+      "Deamon Hound"
+    ],
+    "row": 4,
+    "col": 8
+  },
+  "Берег реки": {
+    "enemies": [
+      "Brawlhopper"
+    ],
+    "row": 5,
+    "col": 4
+  },
+  "Каменное плато": {
+    "enemies": [
+      "Gremlin",
+      "Gremlin Rogue"
+    ],
+    "row": 3,
+    "col": 8
+  },
+  "Рунная зона": {
+    "enemies": [
+      "Enchanted Golem",
+      "Magic Adept",
+      "Spark"
+    ],
+    "row": 3,
+    "col": 11
+  },
+  "Секретная лаборатория": {
+    "enemies": [
+      "Abomination Chomper",
+      "Abomination Hydra"
+    ],
+	"row": 1,
+	"col": 10
+  },
+  "Тайный сад": {
+    "enemies": [
+      "Driada",
+      "Ent"
+    ],
+    "row": 8,
+    "col": 2
+  },
+  "Храм теней": {
+    "enemies": [
+      "Necromancer",
+      "Risen Skeleton"
+    ],
+    "row": 2,
+    "col": 11
+  },
+  "Корабельная палуба": {
+    "enemies": [
+      "Bosun",
+      "Commander"
+    ],
+    "row": 7,
+    "col": 12
+  },
+  "Верфь": {
+    "enemies": [
+      "Bosun",
+      "Veteran"
+    ],
+    "row": 7,
+    "col": 13
+  },
+  "Крайняя топь": {
+    "enemies": [
+      "Giant Mosquito",
+      "Lotus",
+      "Mud Tortoise",
+      "Pluyek"
+    ],
+    "row": 6,
+    "col": 8
+  },
+  "Притон": {
+    "enemies": [
+      "Assassin",
+      "Lazy Guard",
+      "Rebel"
+    ],
+    "row": 6,
+    "col": 10
+  },
+  "Трущобы": {
+    "enemies": [
+      "Beggar",
+      "Rebel"
+    ],
+    "row": 7,
+    "col": 10
+  },
+  "Мелкое озеро": {
+    "enemies": [
+      "Fishleg",
+      "Toad"
+    ],
+    "row": 5,
+    "col": 3
+  },
+  "Одиночество": {
+    "enemies": [
+      "Dark Apostle",
+      "Mana Leech",
+      "Shield Mutant",
+      "Sviper"
+    ],
+    "row": 2,
+    "col": 13
+  },
+  "Вход в болото": {
+    "enemies": [
+      "Fluffbird",
+      "Giant Mosquito",
+      "Mud Tortoise"
+    ],
+    "row": 6,
+    "col": 7
+  },
+  "Таверна Рыбьи ляжки": {
+    "enemies": [
+      "Innkeeper",
+      "Rebel",
+      "Veteran"
+    ],
+    "row": 6,
+    "col": 13
+  },
+  "Убежище громилы": {
+    "enemies": [
+      "Brat",
+      "Thug"
+    ],
+    "row": 3,
+    "col": 3
+  },
+  "Зелёные поля": {
+    "enemies": [
+      "Pixie",
+      "Weird Mushroom"
+    ],
+    "row": 6,
+    "col": 3
+  },
+  "Вход в деревню": {
+    "enemies": [
+      "Fishleg",
+      "Thug",
+      "Toad"
+    ],
+    "row": 4,
+    "col": 3
+  },
+  "Развалины в деревне": {
+    "enemies": [
+      "Brat",
+      "Rat"
+    ],
+    "row": 3,
+    "col": 2
+  },
+  "Деревенские трущобы": {
+    "enemies": [
+      "Brat",
+      "Drunk"
+    ],
+    "row": 2,
+    "col": 3
+  },
+  "Окрестности деревни": {
+    "enemies": [
+      "Deamon Mercenary",
+      "Deamon Noble"
+    ],
+    "row": 3,
+    "col": 13
+  },
+  "Учебное поле": {
+    "enemies": [
+      "Bowman",
+      "Swordsman"
+    ],
+    "row": 5,
+    "col": 12
+  },
+  "Водопад": {
+    "enemies": [
+      "Bandit",
+      "Wolf"
+    ],
+    "row": 4,
+    "col": 5
+  },
+  "Богатый район": {
+    "enemies": [
+      "Deamon Mercenary",
+      "Magic Adept"
+    ],
+    "row": 3,
+    "col": 12
+  },
+  "Граница сырых земель": {
+    "enemies": [
+      "Bandit",
+      "Brawlhopper",
+      "Fluffbird"
+    ],
+    "row": 5,
+    "col": 7
+  },
+  "Пшеничные поля": {
+    "enemies": [
+      "Farmer Boy",
+      "Sailor Boy"
+    ],
+    "row": 4,
+    "col": 2
+  },
+  "Внутренний двор волшебника": {
+    "enemies": [
+      "Enchanted Golem",
+      "Magic Adept"
+    ],
+    "row": 4,
+    "col": 12
+  },
+  "Круг лесного народа": {
+    "enemies": [
+      "Archer Cultist",
+      "Ivy Cultist"
+    ],
+    "row": 6,
+    "col": 5
+  }
+}

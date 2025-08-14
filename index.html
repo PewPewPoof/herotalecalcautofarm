@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Карта локаций 13×8 — проверка проходимости</title>
+<style>
+  :root{
+    --ok:#22c55e;      /* зелёный: без потери HP */
+    --survive:#eab308; /* жёлтый: выживет */
+    --rip:#ef4444;     /* красный: умирает */
+    --unknown:#9ca3af; /* серый: нет данных */
+    --grid:#334155;
+    --bg:#0b1220;
+    --panel:#111827;
+    --ink:#e5e7eb;
+    --muted:#9aa3b2;
+    --accent:#38bdf8;
+  }
+  html,body{margin:0;height:100%;background:#0b1220;color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  header{padding:16px 20px;border-bottom:1px solid #1f2937;background:#0b1220;position:sticky;top:0;z-index:5}
+  header h1{margin:0;font-size:18px;letter-spacing:.3px}
+  main{display:grid;grid-template-columns:360px 1fr;gap:16px;padding:16px}
+  .card{background:var(--panel);border:1px solid #1f2937;border-radius:12px;padding:14px}
+  .card h2{margin:0 0 10px;font-size:15px;color:#dbeafe}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  label{font-size:12px;color:var(--muted)}
+  input,select{background:#0f172a;color:var(--ink);border:1px solid #334155;border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+  input[type="number"]{width:110px}
+  .checkboxes{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{cursor:pointer;background:#0ea5e9;border:none;color:white;border-radius:10px;padding:10px 12px;font-weight:600}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .muted{color:var(--muted);font-size:12px}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px}
+  .dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-2px}
+  .map{overflow:auto;border-radius:12px;border:1px solid #1f2937}
+  table{border-collapse:separate;border-spacing:0;width:100%;min-width:780px;background:#0b1220}
+  th,td{border:1px solid var(--grid);padding:0;position:relative}
+  th{background:#0f172a;color:#cbd5e1;font-size:12px;padding:6px 8px;position:sticky;top:0;z-index:2}
+  .rowHdr{position:sticky;left:0;z-index:1;background:#0f172a;color:#cbd5e1;width:40px;text-align:center}
+  .cell{height:58px;position:relative}
+  .cell > button{width:100%;height:100%;border:none;background:transparent;color:inherit;text-align:left;padding:6px 8px;cursor:pointer}
+  .cell .name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .badge{position:absolute;bottom:6px;right:6px;font-size:11px;padding:2px 6px;border-radius:999px;background:#0f172a;border:1px solid #334155;color:#cbd5e1}
+  .state-unknown{background:linear-gradient(135deg,#0b1220 0%,#0f172a 100%)}
+  .state-rip{background:linear-gradient(135deg,#2b0f12 0%,#3a0f12 100%)}
+  .state-survive{background:linear-gradient(135deg,#2a2010 0%,#3a2a10 100%)}
+  .state-ok{background:linear-gradient(135deg,#0f2a1c 0%,#123a26 100%)}
+  .files{display:grid;grid-template-columns:1fr;gap:8px}
+  .tooltip{
+    position:fixed;pointer-events:none;z-index:50;display:none;max-width:360px;
+    background:#0f172a;border:1px solid #334155;border-radius:12px;padding:10px;box-shadow:0 8px 32px rgba(0,0,0,.4)
+  }
+  .tooltip h3{margin:0 0 6px;font-size:13px;color:#e2e8f0}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px;font-size:12px;color:#cbd5e1}
+  .kv span:first-child{color:#94a3b8}
+  .list{font-size:12px;color:#cbd5e1;margin:6px 0 0;padding-left:16px}
+  .pill{display:inline-block;border:1px solid #334155;border-radius:999px;padding:2px 8px;font-size:11px;margin-right:6px}
+  .divider{height:1px;background:#1f2937;margin:8px 0}
+  .footer{font-size:11px;color:#94a3b8}
+  .spacer{height:8px}
+  details summary{cursor:pointer}
+
+  /* Цвета списка без координат */
+  .list .ok { color: var(--ok); }
+  .list .survive { color: var(--survive); }
+  .list .rip { color: var(--rip); }
+  .list .unknown { color: var(--unknown); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Проверка проходимости локаций (13×8) — Netlify версия</h1>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1) Данные</h2>
+    <div class="files">
+      <div class="row">
+        <label>Данные берутся автоматически из <code>enemies.json</code> и <code>locations.json</code>, лежащих рядом со страницей.</label>
+      </div>
+      <div class="row">
+        <button class="btn" id="btnRetry">Перезагрузить данные</button>
+        <span class="muted" id="fetchStatus">— не загружено</span>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+    <h2>2) Герой</h2>
+    <div class="row">
+      <input type="number" step="0.01" id="attack" placeholder="Сила атаки (Power)" />
+      <input type="number" step="0.01" id="armor" placeholder="Защита (%)" />
+      <input type="number" step="0.01" id="defense" placeholder="Доспех (абс.)" />
+    </div>
+    <div class="row">
+      <input type="number" step="0.01" id="hp" placeholder="HP" />
+      <input type="number" step="0.01" id="hp_regen" placeholder="HP/сек (реген)" />
+      <input type="number" step="0.01" id="speed" placeholder="Скорость" />
+    </div>
+    <div class="row">
+      <input type="number" step="0.01" id="attack_range" placeholder="Дальность атаки" />
+      <input type="number" step="0.01" id="base_attack_time" placeholder="Баз. время атаки" />
+    </div>
+    <div class="row">
+      <input type="number" step="0.01" id="mastery" placeholder="Мастерство оружия" />
+      <input type="number" step="0.01" id="mastery_magic" placeholder="Мастерство магии" />
+      <input type="number" step="0.01" id="mana_regen" placeholder="Мана/сек (реген)" />
+    </div>
+    <div class="row checkboxes">
+      <label><input type="checkbox" id="spell_heal"> Лечение</label>
+      <label><input type="checkbox" id="spell_lightning"> Молния</label>
+      <label><input type="checkbox" id="spell_poison"> Яд</label>
+      <span class="pill" id="manaUsage">расход 0.00/сек</span>
+    </div>
+    <div class="row">
+      <button class="btn" id="btnCalc">Пересчитать</button>
+      <button class="btn" id="btnSave">Сохранить пресет</button>
+      <button class="btn" id="btnLoad">Загрузить пресет</button>
+      <span class="muted" id="calcStatus">— нет расчёта</span>
+    </div>
+
+    <details class="muted">
+      <summary>Как определяется «без потери HP»?</summary>
+      <div class="muted">
+        Для каждого боя считается реген в конце: <code>total_regen = min(2 × hp_regen, max_hp − hp)</code>.
+        Бой «без потери HP», если <code>hp + total_regen ≥ начальный hp</code>. Локация «без потери HP», если так для всех её врагов.
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>Карта 13×8</h2>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--unknown)"></span>нет данных</span>
+      <span><span class="dot" style="background:var(--rip)"></span>умирает</span>
+      <span><span class="dot" style="background:var(--survive)"></span>выживет</span>
+      <span><span class="dot" style="background:var(--ok)"></span>без потери HP</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="map" id="mapWrap"></div>
+    <div class="spacer"></div>
+    <div class="card" style="background:#0b1220;border-color:#1f2937">
+      <h2>Локации без координат</h2>
+      <div id="listNoCoords" class="muted">— пока пусто</div>
+    </div>
+  </section>
+</main>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+/* ===============================================
+   0) Утилиты
+================================================ */
+const $ = sel => document.querySelector(sel);
+const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+const fmt2 = n => (isFinite(n)?Number(n).toFixed(2):'—');
+const byId = id => document.getElementById(id);
+
+function toast(el, text){
+  el.textContent = "— " + text;
+}
+
+/* ===============================================
+   1) Данные JSON (автоподгрузка)
+================================================ */
+let ENEMIES = {};
+let LOCATIONS = {}; // { name: {enemies:[...], row?, col?, ...}, ... }
+
+async function tryFetchDefaults(){
+  try{
+    const [eResp,lResp] = await Promise.all([
+      fetch('enemies.json',{cache:'no-store'}),
+      fetch('locations.json',{cache:'no-store'})
+    ]);
+    if(!eResp.ok || !lResp.ok) throw new Error("Файл(ы) не найдены");
+    ENEMIES = await eResp.json();
+    LOCATIONS = await lResp.json();
+    toast(byId('fetchStatus'), 'данные загружены');
+    return true;
+  }catch(err){
+    console.error(err);
+    toast(byId('fetchStatus'), 'ошибка загрузки — проверьте, что JSON лежат рядом со страницей');
+    ENEMIES = {}; LOCATIONS = {};
+    return false;
+  }
+}
+
+/* ===============================================
+   2) Механика боя (порт Python → JS)
+================================================ */
+class Character {
+  constructor({name, attack, armor, defense, hp, speed, attack_range, base_attack_time,
+               hp_regen=0, mastery=0, mastery_magic=0, is_hero=false, active_spells=[], mana_regen=5}){
+    this.name = name;
+    this.attack = +attack;
+    this.armor = +armor;
+    this.defense = +defense;
+    this.hp = +hp;
+    this.max_hp = +hp;
+    this.speed = +speed;
+    this.attack_range = +attack_range;
+    this.base_attack_time = +base_attack_time;
+    this.hp_regen = +hp_regen;
+    this.mastery = +mastery;
+    this.mastery_magic = +mastery_magic;
+    this.is_hero = !!is_hero;
+    this.active_spells = active_spells.slice();
+    this.mana_regen = +mana_regen;
+
+    this.all_spells = {
+      heal:       { name:"Лечение",  attack_multiplier:3,   mana_cost:5,  cooldown:10, mana_per_second:null },
+      lightning:  { name:"Молния",   attack_multiplier:200, mana_cost:70, cooldown:40, mana_per_second:null },
+      poison:     { name:"Яд",       attack_multiplier:1,   mana_cost:20, cooldown:16, mana_per_second:null },
+    };
+    for(const k in this.all_spells){
+      const cast_time = this.get_cast_time_raw();
+      const eff_cd = cast_time + this.all_spells[k].cooldown;
+      this.all_spells[k].mana_per_second = this.all_spells[k].mana_cost / eff_cd;
+    }
+    this.active_effects = [];
+    this.spell_cooldowns = {};
+    this.casting = null;
+    this.cast_end_time = 0;
+    this.mana = this.is_hero ? 100 : 0;
+    this.max_mana = this.is_hero ? 100 : 0;
+  }
+
+  // === формулы ===
+  calculate_damage(target, is_magic=false){
+    if(is_magic){
+      const power_term = Math.pow(this.attack + this.mastery_magic, 2.1);
+      const base_damage = (this.attack + (power_term/100));
+      return Math.max(0, base_damage);
+    } else {
+      const power_term = Math.pow(this.attack + this.mastery, 2.1);
+      const base_damage = (this.attack + (power_term/100));
+      const damage = (base_damage * (1 - target.armor/100)) - target.defense;
+      return Math.max(0, damage);
+    }
+  }
+  get_attack_cooldown(){ return this.base_attack_time + 1.5 * Math.pow(0.99, this.mastery); }
+  get_cast_time_raw(){ return 2 * Math.pow(0.99, this.mastery_magic); }
+  get_cast_time(){ return this.get_cast_time_raw(); }
+
+  can_cast_spell(spell_key, t){
+    if(this.casting && t < this.cast_end_time) return false;
+    if(this.spell_cooldowns[spell_key] && t < this.spell_cooldowns[spell_key]) return false;
+    if(this.mana < this.all_spells[spell_key].mana_cost) return false;
+    return true;
+  }
+
+  cast_spell(spell_key, target, t){
+    if(!this.can_cast_spell(spell_key, t)) return false;
+    const spell = this.all_spells[spell_key];
+    const cast_time = this.get_cast_time();
+    this.casting = spell_key;
+    this.cast_end_time = t + cast_time;
+    this.spell_cooldowns[spell_key] = t + cast_time + spell.cooldown;
+    this.mana -= spell.mana_cost;
+    this.apply_spell_effect(spell_key, target, t);
+    return true;
+  }
+
+  apply_spell_effect(spell_key, target, t){
+    const spell = this.all_spells[spell_key];
+    if(spell_key === 'heal'){
+      const heal_amount = this.calculate_damage(target, true) * spell.attack_multiplier;
+      this.hp = Math.min(this.max_hp, this.hp + heal_amount);
+      const duration = Math.pow(this.mastery_magic, 0.5);
+      const multiplier = Math.pow(this.mastery_magic, 0.3);
+      this.active_effects.push({ type:'heal_regen', multiplier, end_time: t + duration });
+    } else if(spell_key === 'lightning'){
+      const dmg = this.calculate_damage(target, true) * spell.attack_multiplier;
+      target.hp -= dmg;
+      const stun_duration = Math.max(0, Math.pow(this.mastery_magic,0.5) - 7);
+      if(stun_duration > 0){
+        target.active_effects.push({ type:'stun', end_time: t + stun_duration });
+      }
+    } else if(spell_key === 'poison'){
+      const initial = this.calculate_damage(target, true) * spell.attack_multiplier;
+      target.hp -= initial;
+      const duration = Math.pow(this.mastery_magic, 0.8);
+      const tick_damage = Math.pow(this.mastery_magic, 1.1);
+      this.active_effects.push({
+        type:'poison', target, tick_damage, next_tick: t + 1, end_time: t + duration
+      });
+    }
+  }
+
+  update_effects(t, dt){
+    const ne = [];
+    for(const eff of this.active_effects){
+      if(eff.end_time > t){
+        if(eff.type === 'poison' && t >= eff.next_tick){
+          eff.target.hp -= eff.tick_damage;
+          eff.next_tick = t + 1;
+        }
+        ne.push(eff);
+      }
+    }
+    this.active_effects = ne;
+
+    let heal_mult = 1.0;
+    for(const eff of this.active_effects){
+      if(eff.type === 'heal_regen') heal_mult = Math.max(heal_mult, eff.multiplier);
+    }
+    if(this.is_hero){
+      this.hp = Math.min(this.max_hp, this.hp + this.hp_regen * heal_mult * dt);
+      this.mana = Math.min(this.max_mana, this.mana + this.mana_regen * dt);
+    }
+  }
+
+  get_available_spells(t){
+    const out = [];
+    for(const k of this.active_spells){
+      if(this.can_cast_spell(k, t)) out.push(k);
+    }
+    return out;
+  }
+
+  simulate_battle(enemy){
+    const initial_hp = this.hp;
+    let enemy_hp = enemy.hp;
+
+    const range_diff = Math.abs(this.attack_range - enemy.attack_range);
+    let hero_next_attack, enemy_next_attack;
+    if(this.attack_range < enemy.attack_range){
+      const chase_time = (range_diff * enemy.speed) / this.speed;
+      hero_next_attack = chase_time + this.get_attack_cooldown();
+      enemy_next_attack = enemy.get_attack_cooldown();
+    } else {
+      const chase_time = (range_diff * this.speed) / enemy.speed;
+      hero_next_attack = this.get_attack_cooldown();
+      enemy_next_attack = chase_time + enemy.get_attack_cooldown();
+    }
+
+    let t = 0;
+    const dt = 0.1;
+
+    // Сброс побочных полей у противника
+    enemy.active_effects = [];
+    enemy.spell_cooldowns = {};
+    enemy.casting = null;
+
+    while(this.hp > 0 && enemy_hp > 0 && t < 10*60){ // safety 10 минут
+      // Заклинания (приоритет: lightning > poison > heal при hp<70%)
+      const avail = this.get_available_spells(t);
+      if(avail.length){
+        if(avail.includes('lightning')) this.cast_spell('lightning', enemy, t);
+        else if(avail.includes('poison')) this.cast_spell('poison', enemy, t);
+        else if(avail.includes('heal') && this.hp < this.max_hp*0.7) this.cast_spell('heal', enemy, t);
+      }
+
+      this.update_effects(t, dt);
+      enemy.update_effects(t, dt);
+
+      const enemy_stunned = enemy.active_effects.some(e=>e.type==='stun' && e.end_time>t);
+
+      if(t >= hero_next_attack && !(this.casting && t < this.cast_end_time)){
+        const dmg = this.calculate_damage(enemy);
+        enemy_hp -= dmg;
+        hero_next_attack += this.get_attack_cooldown();
+        if(enemy_hp <= 0) break;
+      }
+
+      if(t >= enemy_next_attack && !enemy_stunned){
+        this.hp -= enemy.calculate_damage(this);
+        enemy_next_attack += enemy.get_attack_cooldown();
+      }
+
+      t += dt;
+      // синхронизируем фактическое hp врага (удары/магия)
+      enemy.hp = enemy_hp;
+    }
+
+    const battle_duration = t;
+    const total_regen = Math.min(2 * this.hp_regen, this.max_hp - this.hp);
+    const noHpLoss = (this.hp + total_regen) >= initial_hp;
+    const survived = (this.hp > 0 && enemy_hp <= 0);
+
+    // откат
+    this.hp = initial_hp;
+    this.mana = this.max_mana;
+    this.active_effects = [];
+    this.spell_cooldowns = {};
+    this.casting = null;
+
+    return { survived, noHpLoss, battle_duration };
+  }
+}
+
+/* ===============================================
+   3) Расчёт по локациям
+================================================ */
+function getHeroFromUI(){
+  const active_spells = [];
+  if(byId('spell_heal').checked) active_spells.push('heal');
+  if(byId('spell_lightning').checked) active_spells.push('lightning');
+  if(byId('spell_poison').checked) active_spells.push('poison');
+
+  return new Character({
+    name:"Мальчик",
+    attack: +byId('attack').value || 0,
+    armor: +byId('armor').value || 0,
+    defense: +byId('defense').value || 0,
+    hp: +byId('hp').value || 1,
+    speed: +byId('speed').value || 1,
+    attack_range: +byId('attack_range').value || 0,
+    base_attack_time: +byId('base_attack_time').value || 1,
+    hp_regen: +byId('hp_regen').value || 0,
+    mastery: +byId('mastery').value || 0,
+    mastery_magic: +byId('mastery_magic').value || 0,
+    is_hero: true,
+    active_spells,
+    mana_regen: +byId('mana_regen').value || 0
+  });
+}
+
+function manaUsageFromUI(){
+  // mana_cost/(cast+cd)
+  const mastery_magic = +byId('mastery_magic').value || 0;
+  const cast_time = 2 * Math.pow(0.99, mastery_magic);
+  const spells = [
+    byId('spell_heal').checked     ? {cost:5,  cd:10} : null,
+    byId('spell_lightning').checked? {cost:70, cd:40} : null,
+    byId('spell_poison').checked   ? {cost:20, cd:16} : null,
+  ].filter(Boolean);
+  let total = 0;
+  for(const s of spells){
+    const eff = cast_time + s.cd;
+    total += s.cost / eff;
+  }
+  return total;
+}
+
+function computeAll(hero){
+  const results = {}; // name -> { survivedAll, noHpLossAll, xpm, cpm, time, enemies:[...]}
+  for(const [locName, locData] of Object.entries(LOCATIONS)){
+    const enemiesList = Array.isArray(locData.enemies) ? locData.enemies.slice() : [];
+    let survivedAll = true;
+    let noHpLossAll = true;
+    let totalXP=0, totalCoin=0, totalTime=0;
+
+    for(const enemyName of enemiesList){
+      const ed = ENEMIES[enemyName];
+      if(!ed){ survivedAll = false; noHpLossAll = false; break; }
+      const enemy = new Character({
+        name:enemyName, attack:ed.attack, armor:ed.armor, defense:ed.defense, hp:ed.hp,
+        speed:ed.speed, attack_range:ed.attack_range, base_attack_time:ed.base_attack_time,
+        mastery:0, hp_regen:0, is_hero:false
+      });
+      const { survived, noHpLoss, battle_duration } = hero.simulate_battle(enemy);
+      if(!survived) survivedAll = false;
+      if(!noHpLoss) noHpLossAll = false;
+
+      totalXP  += (ed.exp || 0);
+      totalCoin += (ed.coin || 0);
+      totalTime += battle_duration + 4; // 4 секунды между боями
+    }
+
+    let xpm = 0, cpm = 0;
+    if(totalTime>0){
+      xpm = (totalXP / totalTime) * 60;
+      cpm = (totalCoin / totalTime) * 60;
+    }
+    results[locName] = {
+      survivedAll, noHpLossAll, xpm, cpm, time: totalTime, enemies: enemiesList,
+      row: locData.row, col: locData.col
+    };
+  }
+  return results;
+}
+
+/* ===============================================
+   4) Отрисовка карты 13×8
+================================================ */
+const mapWrap = byId('mapWrap');
+const tooltip = byId('tooltip');
+
+function renderMap(results=null){
+  const rows = 8, cols = 13;
+  // индекс по координатам
+  const byCoord = {};
+  for(const name in LOCATIONS){
+    const l = LOCATIONS[name];
+    if(Number.isFinite(+l.row) && Number.isFinite(+l.col)){
+      const key = `${+l.row}-${+l.col}`;
+      if(!byCoord[key]) byCoord[key] = [];
+      byCoord[key].push(name);
+    }
+  }
+
+  const tbl = document.createElement('table');
+  const thead = document.createElement('thead');
+  const thr = document.createElement('tr');
+  thr.appendChild(document.createElement('th')); // пустой угол
+  for(let c=1;c<=cols;c++){
+    const th = document.createElement('th'); th.textContent = c;
+    thr.appendChild(th);
+  }
+  thead.appendChild(thr);
+  tbl.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+
+  for(let r=1;r<=rows;r++){
+    const tr = document.createElement('tr');
+    const th = document.createElement('th'); th.className='rowHdr'; th.textContent = r;
+    tr.appendChild(th);
+    for(let c=1;c<=cols;c++){
+      const td = document.createElement('td'); td.className='cell';
+      const btn = document.createElement('button');
+
+      const locNames = byCoord[`${r}-${c}`] || [];
+      if(locNames.length === 0){
+        btn.disabled = true;
+        td.classList.add('state-unknown');
+        btn.innerHTML = `<div class="name">—</div>`;
+      } else {
+        // если несколько — показываем первую и +N
+        const label = locNames[0] + (locNames.length>1?` (+${locNames.length-1})`:``);
+        btn.innerHTML = `<div class="name">${label}</div>`;
+        // статус
+        let statusClass = 'state-unknown';
+        let badge = '—';
+        if(results){
+          let anyRip=false, anySurvive=false, allNoLoss=true;
+          let dataForTooltip = [];
+          for(const nm of locNames){
+            const r = results[nm];
+            if(!r){ anyRip=true; allNoLoss=false; continue; }
+            if(!r.survivedAll) anyRip=true;
+            if(r.survivedAll) anySurvive=true;
+            if(!r.noHpLossAll) allNoLoss=false;
+            dataForTooltip.push({name:nm, r});
+          }
+          if(anyRip && !anySurvive){ statusClass='state-rip'; badge='RIP'; }
+          else if(allNoLoss){ statusClass='state-ok'; badge='OK'; }
+          else if(anySurvive){ statusClass='state-survive'; badge='GO'; }
+          else { statusClass='state-unknown'; badge='—'; }
+
+          // тултип с подробностями
+          btn.addEventListener('mousemove', (ev)=>{
+            tooltip.style.display='block';
+            tooltip.style.left = (ev.clientX+12)+'px';
+            tooltip.style.top  = (ev.clientY+12)+'px';
+            tooltip.innerHTML = renderTooltipHTML(dataForTooltip);
+          });
+          btn.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+        }
+        td.classList.add(statusClass);
+        const b = document.createElement('span'); b.className='badge'; b.textContent=badge;
+        td.appendChild(b);
+      }
+
+      td.appendChild(btn);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  tbl.appendChild(tbody);
+  mapWrap.innerHTML = '';
+  mapWrap.appendChild(tbl);
+}
+
+function renderTooltipHTML(items){
+  if(!items || !items.length) return `<div class="muted">Нет данных</div>`;
+  const top = items.slice(0,6).map(({name, r})=>{
+    const status = r.noHpLossAll ? 'без потери HP' : (r.survivedAll ? 'выживет' : 'умирает');
+    const clr = r.noHpLossAll ? 'var(--ok)' : (r.survivedAll ? 'var(--survive)' : 'var(--rip)');
+    return `
+      <div style="margin-bottom:8px">
+        <h3>${name}</h3>
+        <div class="kv">
+          <span>Статус</span><span><span class="dot" style="background:${clr}"></span>${status}</span>
+          <span>XPM</span><span>${fmt2(r.xpm)}</span>
+          <span>CPM</span><span>${fmt2(r.cpm)}</span>
+          <span>Время</span><span>${fmt2(r.time)} c</span>
+          <span>Враги</span><span>${(r.enemies||[]).join(', ')||'—'}</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+    `;
+  }).join('');
+  return top + (items.length>6?`<div class="footer">… и ещё ${items.length-6}</div>`:'');
+}
+
+function renderNoCoords(results=null){
+  const box = byId('listNoCoords');
+  const noCoords = [];
+  for(const [name, l] of Object.entries(LOCATIONS)){
+    if(!(Number.isFinite(+l.row) && Number.isFinite(+l.col))) noCoords.push(name);
+  }
+  if(noCoords.length===0){
+    box.textContent = '— все локации имеют координаты';
+    return;
+  }
+
+  if(results === null){
+    box.innerHTML = `<ul class="list">${noCoords.map(n => `<li>${n}</li>`).join('')}</ul>`;
+  } else {
+    const lines = noCoords.map(n => {
+      const r = results[n];
+      if(!r) return `<li class="unknown">${n} (нет данных)</li>`;
+      let colorClass = 'unknown';
+      let tag = '';
+      if(r.noHpLossAll) { colorClass = 'ok'; tag = 'OK'; }
+      else if(r.survivedAll) { colorClass = 'survive'; tag = 'GO'; }
+      else { colorClass = 'rip'; tag = 'RIP'; }
+      return `<li class="${colorClass}">${n} — <b>${tag}</b> (XPM ${fmt2(r.xpm)}, CPM ${fmt2(r.cpm)}, T ${fmt2(r.time)}с)</li>`;
+    });
+    box.innerHTML = `<ul class="list">${lines.join('')}</ul>`;
+  }
+}
+
+/* ===============================================
+   5) Взаимодействие
+================================================ */
+function recalc(){
+  if(!Object.keys(ENEMIES).length || !Object.keys(LOCATIONS).length){
+    toast(byId('calcStatus'), 'данные не загружены');
+    renderMap(null); renderNoCoords(null);
+    return;
+  }
+  const hero = getHeroFromUI();
+  const results = computeAll(hero);
+  renderMap(results);
+  renderNoCoords(results);
+  toast(byId('calcStatus'), 'готово');
+}
+
+byId('btnCalc').addEventListener('click', recalc);
+
+// Автообновление расхода маны
+function updateManaUsage(){
+  const total = manaUsageFromUI();
+  byId('manaUsage').textContent = `расход ${total.toFixed(2)}/сек`;
+}
+['mastery_magic','spell_heal','spell_lightning','spell_poison'].forEach(id=>{
+  byId(id).addEventListener('input', updateManaUsage);
+  byId(id).addEventListener('change', updateManaUsage);
+});
+
+// Пресеты
+byId('btnSave').addEventListener('click', ()=>{
+  const fields = ['attack','armor','defense','hp','hp_regen','speed','attack_range','base_attack_time','mastery','mastery_magic','mana_regen'];
+  const data = {};
+  for(const f of fields) data[f] = byId(f).value;
+  data.spells = {
+    heal: byId('spell_heal').checked,
+    lightning: byId('spell_lightning').checked,
+    poison: byId('spell_poison').checked,
+  };
+  localStorage.setItem('hero_preset', JSON.stringify(data));
+  toast(byId('calcStatus'),'пресет сохранён');
+});
+byId('btnLoad').addEventListener('click', ()=>{
+  const raw = localStorage.getItem('hero_preset');
+  if(!raw){ toast(byId('calcStatus'),'пресет не найден'); return; }
+  try{
+    const data = JSON.parse(raw);
+    const fields = ['attack','armor','defense','hp','hp_regen','speed','attack_range','base_attack_time','mastery','mastery_magic','mana_regен'];
+  }catch{}
+});
+</script>
+<script>
+// Исправление опечатки и продолжение пресетов (вынес отдельно для наглядности)
+(function(){
+  const fields = ['attack','armor','defense','hp','hp_regen','speed','attack_range','base_attack_time','mastery','mastery_magic','mana_regen'];
+  byId('btnLoad').onclick = ()=>{
+    const raw = localStorage.getItem('hero_preset');
+    if(!raw){ toast(byId('calcStatus'),'пресет не найден'); return; }
+    try{
+      const data = JSON.parse(raw);
+      for(const f of fields){ if(f in data) byId(f).value = data[f]; }
+      if(data.spells){
+        byId('spell_heal').checked = !!data.spells.heal;
+        byId('spell_lightning').checked = !!data.spells.lightning;
+        byId('spell_poison').checked = !!data.spells.poison;
+      }
+      updateManaUsage();
+      toast(byId('calcStatus'),'пресет загружен');
+    }catch{
+      toast(byId('calcStatus'),'ошибка пресета');
+    }
+  };
+})();
+
+// Кнопка перезагрузки данных + автозагрузка при старте
+byId('btnRetry').addEventListener('click', async ()=>{
+  const ok = await tryFetchDefaults();
+  renderMap(); renderNoCoords();
+  if(ok) toast(byId('fetchStatus'),'данные загружены'); 
+});
+
+(async function init(){
+  updateManaUsage();
+  const ok = await tryFetchDefaults();
+  renderMap(); renderNoCoords();
+  if(!ok){
+    // мягкий фолбэк: карта без данных (серые клетки) до пока не нажмут «Перезагрузить»
+  }
+})();
+</script>
+</body>
+</html>
